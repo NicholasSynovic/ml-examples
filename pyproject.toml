@@ -9,6 +9,8 @@ packages = [{include = "ml_examples"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 scikit-learn = "^1.2.2"
+requests = "^2.28.2"
+progress = "^1.6"
 
 
 [build-system]

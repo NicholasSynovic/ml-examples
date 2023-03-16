@@ -8,6 +8,7 @@ packages = [{include = "ml_examples"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+scikit-learn = "^1.2.2"
 
 
 [build-system]

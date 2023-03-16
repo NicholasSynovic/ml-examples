@@ -1,6 +1,5 @@
 from pathlib import PurePath
 
-from progress.bar import Bar
 from requests import Response, get
 
 dataURL: str = (

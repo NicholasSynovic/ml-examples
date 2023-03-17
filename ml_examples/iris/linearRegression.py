@@ -23,6 +23,10 @@ def train(
     bestFeatures: Tuple[str, str]
     topEstimator: LinearRegression = LinearRegression()
 
+    parameters: dict = {"linearregression__positive": (True, False)}
+
+    pipeline: Pipeline = make_pipeline(StandardScaler(), LinearRegression())
+
     columns: List[str] = df.columns.drop(labels=["Class", "EncodedLabel"]).to_list()
     columnCombinations: List[Tuple[str, str]] = list(combinations(columns, r=2))
 
@@ -32,20 +36,20 @@ def train(
     ) as bar:
         combo: Tuple[str, str]
         for combo in columnCombinations:
-            pipeline: Pipeline = make_pipeline(StandardScaler(), LinearRegression())
-
             trainX: Series = df[[combo[0], combo[1]]]
             trainY: Series = df["EncodedLabel"]
             validationX: Series = validationDF[[combo[0], combo[1]]]
             validationY: Series = validationDF["EncodedLabel"]
 
-            pipeline.fit(trainX, trainY)
+            gscv: GridSearchCV = GridSearchCV(pipeline, parameters)
+            gscv.fit(trainX, trainY)
 
-            score: float = pipeline.score(validationX, validationY)
+            model: Pipeline = gscv.best_estimator_
+            score: float = model.score(validationX, validationY)
             if score > topScore:
                 topScore = score
                 bestFeatures = combo
-                topEstimator = pipeline
+                topEstimator = model
 
             bar.next()
 

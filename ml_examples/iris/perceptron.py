@@ -64,32 +64,28 @@ def train(
     columns: List[str] = df.columns.drop(labels=["Class", "EncodedLabel"]).to_list()
     columnCombinations: List[Tuple[str, str]] = list(combinations(columns, r=2))
 
-    pairs: List[DataFrame] = createBinaryClassPairings(df)
-
     with Bar(
         "Trying to find the best Perceptron model for the Iris dataset...",
-        max=len(columnCombinations) * len(pairs),
+        max=len(columnCombinations),
     ) as bar:
-        pair: DataFrame
-        for pair in pairs:
-            combo: Tuple[str, str]
-            for combo in columnCombinations:
-                trainX: Series = pair[[combo[0], combo[1]]]
-                trainY: Series = pair["EncodedLabel"]
-                validationX: Series = validationDF[[combo[0], combo[1]]]
-                validationY: Series = validationDF["EncodedLabel"]
+        combo: Tuple[str, str]
+        for combo in columnCombinations:
+            trainX: Series = df[[combo[0], combo[1]]]
+            trainY: Series = df["EncodedLabel"]
+            validationX: Series = validationDF[[combo[0], combo[1]]]
+            validationY: Series = validationDF["EncodedLabel"]
 
-                gscv: GridSearchCV = GridSearchCV(pipeline, parameters)
-                gscv.fit(trainX, trainY)
+            gscv: GridSearchCV = GridSearchCV(pipeline, parameters)
+            gscv.fit(trainX, trainY)
 
-                model: Perceptron = gscv.best_estimator_
-                score: float = model.score(validationX, validationY)
-                if score > topScore:
-                    topScore = score
-                    bestFeatures = combo
-                    topEstimator = model
+            model: Perceptron = gscv.best_estimator_
+            score: float = model.score(validationX, validationY)
+            if score > topScore:
+                topScore = score
+                bestFeatures = combo
+                topEstimator = model
 
-                bar.next()
+            bar.next()
 
     return (topScore, bestFeatures, topEstimator)
 
@@ -103,17 +99,22 @@ def main() -> None:
 
     trainingDF, validationDF, testingDF = splitData(df)
 
-    topScore, bestFeatures, topModel = train(trainingDF, validationDF)
+    pairs: List[DataFrame] = createBinaryClassPairings(trainingDF)
 
-    print(f"The top score was: {topScore * 100}%")
-    print(f"The best features were: {bestFeatures}")
+    pair: DataFrame
+    for pair in pairs:
+        topScore, bestFeatures, topModel = train(df=pair, validationDF=validationDF)
 
-    X: Series = testingDF[[bestFeatures[0], bestFeatures[1]]]
-    y: Series = testingDF["EncodedLabel"]
+        print(f"The labels evaluated were: {pair['Class'].unique().tolist()}")
+        print(f"The top score was: {topScore * 100}%")
+        print(f"The best features were: {bestFeatures}\n")
 
-    score: float = topModel.score(X, y)
+        X: Series = testingDF[[bestFeatures[0], bestFeatures[1]]]
+        y: Series = testingDF["EncodedLabel"]
 
-    print(f"The predicted score of the testing data was: {score * 100}%")
+        score: float = topModel.score(X, y)
+
+        print(f"The predicted score of the testing data was: {score * 100}%")
 
 
 if __name__ == "__main__":

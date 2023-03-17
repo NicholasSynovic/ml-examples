@@ -1,6 +1,7 @@
 from itertools import combinations
 from typing import List, Tuple
 
+from joblib import dump
 from numpy import ndarray
 from pandas import DataFrame, Series
 from progress.bar import Bar
@@ -105,16 +106,18 @@ def main() -> None:
     for pair in pairs:
         topScore, bestFeatures, topModel = train(df=pair, validationDF=validationDF)
 
-        print(f"The labels evaluated were: {pair['Class'].unique().tolist()}")
+        labels: List[str] = pair["Class"].unique().tolist()
+        print(f"The labels evaluated were: {labels}")
         print(f"The top score was: {topScore * 100}%")
-        print(f"The best features were: {bestFeatures}\n")
+        print(f"The best features were: {bestFeatures}")
 
         X: Series = testingDF[[bestFeatures[0], bestFeatures[1]]]
         y: Series = testingDF["EncodedLabel"]
-
         score: float = topModel.score(X, y)
 
-        print(f"The predicted score of the testing data was: {score * 100}%")
+        print(f"The predicted score of the testing data was: {score * 100}%\n")
+
+        dump(value=topModel, filename=f"models/perceptron_{'_'.join(labels)}.joblib")
 
 
 if __name__ == "__main__":

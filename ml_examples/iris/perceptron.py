@@ -1,3 +1,4 @@
+import logging
 from itertools import combinations
 from typing import List, Tuple
 
@@ -11,6 +12,8 @@ from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from ml_examples.loaders.loadIris import load
+
+logging.basicConfig(filename="models/perceptron_iris.log", level=logging.INFO)
 
 
 def splitData(df: DataFrame) -> List[DataFrame]:
@@ -107,15 +110,15 @@ def main() -> None:
         topScore, bestFeatures, topModel = train(df=pair, validationDF=validationDF)
 
         labels: List[str] = pair["Class"].unique().tolist()
-        print(f"The labels evaluated were: {labels}")
-        print(f"The top score was: {topScore * 100}%")
-        print(f"The best features were: {bestFeatures}")
+        logging.info(f"Evaluated Labels: {labels}")
+        logging.info(f"Top Training Score: {topScore * 100}%")
+        logging.info(f"Top Features: {bestFeatures}")
 
         X: Series = testingDF[[bestFeatures[0], bestFeatures[1]]]
         y: Series = testingDF["EncodedLabel"]
         score: float = topModel.score(X, y)
 
-        print(f"The predicted score of the testing data was: {score * 100}%\n")
+        logging.info(f"Testing Score: {score * 100}%\n")
 
         dump(value=topModel, filename=f"models/perceptron_{'_'.join(labels)}.joblib")
 

@@ -3,50 +3,17 @@ from itertools import combinations
 from typing import List, Tuple
 
 from joblib import dump
-from numpy import ndarray
 from pandas import DataFrame, Series
 from progress.bar import Bar
 from sklearn.linear_model import Perceptron
-from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from ml_examples.loaders.loadIris import load
+from ml_examples.utils.utils import createBinaryClassPairings, splitData
 
 logging.basicConfig(filename="models/perceptron_iris.log", level=logging.INFO)
-
-
-def splitData(df: DataFrame) -> List[DataFrame]:
-    trainingDF: DataFrame
-    validationDF: DataFrame
-    testingDF: DataFrame
-
-    trainingDF, testingDF = train_test_split(
-        df, test_size=0.15, train_size=0.85, random_state=42, shuffle=True
-    )
-    trainingDF, validationDF = train_test_split(
-        trainingDF, test_size=0.15, train_size=0.85, random_state=42, shuffle=True
-    )
-
-    return [trainingDF, validationDF, testingDF]
-
-
-def createBinaryClassPairings(df: DataFrame) -> List[DataFrame]:
-    data: List[DataFrame] = []
-    uniqueClasses: List[int] = df["EncodedLabel"].unique().tolist()
-    classPairings: List[Tuple[int, int]] = list(combinations(uniqueClasses, r=2))
-
-    pair: Tuple[int, int]
-    for pair in classPairings:
-        data.append(
-            df.drop(
-                df[
-                    (df["EncodedLabel"] != pair[0]) & (df["EncodedLabel"] != pair[1])
-                ].index
-            )
-        )
-
-    return data
 
 
 def train(
@@ -99,9 +66,7 @@ def main() -> None:
     bestFeatures: Tuple[str, str]
     topModel: Perceptron
 
-    df: DataFrame = load()
-
-    trainingDF, validationDF, testingDF = splitData(df)
+    trainingDF, validationDF, testingDF = splitData(df=load())
 
     pairs: List[DataFrame] = createBinaryClassPairings(trainingDF)
 

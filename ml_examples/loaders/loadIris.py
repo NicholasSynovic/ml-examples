@@ -1,7 +1,8 @@
 from pathlib import PurePath
-from typing import List
+from typing import Any, List
 
 from pandas import DataFrame
+from sklearn.preprocessing import LabelEncoder
 
 dataPath: PurePath = PurePath("../data/iris.data")
 
@@ -21,6 +22,8 @@ def _readFile() -> List[List[str]]:
 
 
 def load() -> DataFrame:
+    labelEncoder: LabelEncoder = LabelEncoder()
+
     columns: List[str] = [
         "Sepal Length (cm)",
         "Sepal Width (cm)",
@@ -31,4 +34,7 @@ def load() -> DataFrame:
     data: List[List[str]] = _readFile()
     df: DataFrame = DataFrame(data, columns=columns)
     df.dropna(inplace=True)
+
+    df["EncodedLabel"] = labelEncoder.fit_transform(df["Class"])
+
     return df

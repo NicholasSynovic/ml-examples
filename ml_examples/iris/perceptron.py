@@ -49,7 +49,7 @@ def train(
             gscv: GridSearchCV = GridSearchCV(pipeline, parameters)
             gscv.fit(trainX, trainY)
 
-            model: Perceptron = gscv.best_estimator_
+            model: Pipeline = gscv.best_estimator_
             score: float = model.score(validationX, validationY)
             if score > topScore:
                 topScore = score
@@ -64,7 +64,7 @@ def train(
 def main() -> None:
     topScore: float
     bestFeatures: Tuple[str, str]
-    topModel: Perceptron
+    topModel: Pipeline
 
     trainingDF, validationDF, testingDF = splitData(df=load())
 

@@ -1,46 +1,50 @@
 from itertools import combinations
 from typing import List, Tuple
 
+import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
 from matplotlib import pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
 from pandas import DataFrame
 
 from ml_examples.loaders.loadIris import load
 
 
 def main() -> None:
+    validColors: List[str] = list(mcolors.BASE_COLORS.values())
+
     df: DataFrame = load()
     columns: List[str] = df.columns[0:4].tolist()
+    uniqueClasses: List[str] = df["Class"].unique().tolist()
 
     columnCombinations: combinations = combinations(columns, r=2)
 
+    colors: dict[str, int] = {
+        key: value
+        for key, value in zip(uniqueClasses, validColors[0 : len(uniqueClasses)])
+    }
+
     combo: Tuple[str, str]
     for combo in columnCombinations:
-        titleStr: str = " / ".join(combo)
-
-        xLimit: List[float] = [
-            float(df[combo[0]].min()) - 1,
-            float(df[combo[0]].max()) + 1,
-        ]
-
-        yLimit: List[float] = [
-            float(df[combo[1]].min()) - 1,
-            float(df[combo[1]].max()) + 1,
-        ]
-
-        ax: Axes = df.plot(
-            x=combo[0],
-            y=combo[1],
-            kind="scatter",
-            title=titleStr,
-            legend=True,
-            xlabel=combo[0],
-            ylabel=combo[1],
+        plt.title(f"{combo[0]} / {combo[1]}")
+        plt.scatter(
+            df[combo[0]], df[combo[1]], c=df["Class"].apply(lambda x: colors[x])
         )
 
-        figure: Figure = ax.get_figure()
-        figure.savefig(fname=f"iris_{''.join(combo)}.png")
+        handles: List[Line2D] = [
+            plt.plot([], [], color=color, marker="o", ls="", markersize=10)[0]
+            for color in colors.values()
+        ]
+
+        labels: List[str] = list(colors.keys())
+
+        plt.xlabel(combo[0])
+        plt.ylabel(combo[1])
+
+        plt.legend(handles, labels, loc="upper right")
+        plt.savefig(fname=f"iris_{''.join(combo)}.png")
 
 
 if __name__ == "__main__":

@@ -3,9 +3,6 @@ from typing import List, Tuple
 
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
-from matplotlib import pyplot as plt
-from matplotlib.axes import Axes
-from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from pandas import DataFrame
 

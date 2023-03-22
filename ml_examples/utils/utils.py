@@ -1,7 +1,10 @@
 from itertools import combinations
 from typing import List, Tuple
 
-from pandas import DataFrame
+import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+from pandas import DataFrame, Series
 from sklearn.model_selection import train_test_split
 
 
@@ -50,3 +53,31 @@ def createBinaryClassPairings(df: DataFrame) -> List[DataFrame]:
         )
 
     return data
+
+
+def plotMultiLabeledData(
+    title: str, df: DataFrame, xColumn: str, yColumn: str, labelColumn: str = "Class"
+) -> None:
+    labels: Series = df[labelColumn]
+    uniqueClasses: List[str] = df[labelColumn].unique().tolist()
+    validColors: List[str] = list(mcolors.BASE_COLORS.values())
+
+    colors: dict[str, int] = {
+        key: value
+        for key, value in zip(uniqueClasses, validColors[0 : len(uniqueClasses)])
+    }
+
+    plt.title(title)
+    plt.scatter(df[xColumn], df[yColumn], c=labels.apply(lambda x: colors[x]))
+
+    handles: List[Line2D] = [
+        plt.plot([], [], color=color, marker="o", ls="", markersize=10)[0]
+        for color in colors.values()
+    ]
+
+    labels: List[str] = list(colors.keys())
+
+    plt.xlabel(xColumn)
+    plt.ylabel(yColumn)
+
+    plt.legend(handles, labels, loc="upper right")

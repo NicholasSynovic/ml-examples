@@ -3,17 +3,25 @@ from itertools import combinations
 from typing import List, Tuple
 
 from joblib import dump
+from matplotlib.pyplot import savefig
 from pandas import DataFrame, Series
 from progress.bar import Bar
+from sklearn.inspection import DecisionBoundaryDisplay
 from sklearn.linear_model import Perceptron
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from ml_examples.loaders.loadIris import load
-from ml_examples.utils.utils import createBinaryClassPairings, splitData
+from ml_examples.utils.utils import (createBinaryClassPairings,
+                                     plotMultiLabeledData, splitData)
 
-logging.basicConfig(filename="models/perceptron_iris.log", level=logging.INFO)
+logging.basicConfig(
+    filename="logs/perceptron_iris.log",
+    format="%(asctime)s %(levelname)s %(message)s",
+    level=logging.INFO,
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 
 def train(
@@ -61,6 +69,27 @@ def train(
     return (topScore, bestFeatures, topEstimator)
 
 
+def showTrainingDecisionBoundary(
+    classifier: Perceptron,
+    trainingData: DataFrame,
+    title: str,
+    xColumnName: str,
+    yColumnName: str,
+    filename: str,
+) -> None:
+    data: DataFrame = trainingData[[xColumnName, yColumnName]]
+
+    DecisionBoundaryDisplay.from_estimator(
+        estimator=classifier, X=data, response_method="predict"
+    )
+
+    plotMultiLabeledData(
+        title=title, df=trainingData, xColumn=xColumnName, yColumn=yColumnName
+    )
+
+    savefig(filename)
+
+
 def main() -> None:
     topScore: float
     bestFeatures: Tuple[str, str]
@@ -86,6 +115,15 @@ def main() -> None:
         logging.info(f"Testing Score: {score * 100}%\n")
 
         dump(value=topModel, filename=f"models/perceptron_{'_'.join(labels)}.joblib")
+
+        showTrainingDecisionBoundary(
+            classifier=topModel,
+            trainingData=pair,
+            title="/".join(bestFeatures),
+            xColumnName=bestFeatures[0],
+            yColumnName=bestFeatures[1],
+            filename=f"imgs/iris_{'-'.join(labels)}.png",
+        )
 
 
 if __name__ == "__main__":

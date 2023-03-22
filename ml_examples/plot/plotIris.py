@@ -7,6 +7,7 @@ from matplotlib.lines import Line2D
 from pandas import DataFrame
 
 from ml_examples.loaders.loadIris import load
+from ml_examples.utils.utils import plotMultiLabeledData
 
 
 def main() -> None:
@@ -25,23 +26,27 @@ def main() -> None:
 
     combo: Tuple[str, str]
     for combo in columnCombinations:
-        plt.title(f"{combo[0]} / {combo[1]}")
-        plt.scatter(
-            df[combo[0]], df[combo[1]], c=df["Class"].apply(lambda x: colors[x])
+        plotMultiLabeledData(
+            title="/".join(combo), df=df, xColumn=combo[0], yColumn=combo[1]
         )
 
-        handles: List[Line2D] = [
-            plt.plot([], [], color=color, marker="o", ls="", markersize=10)[0]
-            for color in colors.values()
-        ]
+        # plt.title()
+        # plt.scatter(
+        #     df[combo[0]], df[combo[1]], c=df["Class"].apply(lambda x: colors[x])
+        # )
 
-        labels: List[str] = list(colors.keys())
+        # handles: List[Line2D] = [
+        #     plt.plot([], [], color=color, marker="o", ls="", markersize=10)[0]
+        #     for color in colors.values()
+        # ]
 
-        plt.xlabel(combo[0])
-        plt.ylabel(combo[1])
+        # labels: List[str] = list(colors.keys())
 
-        plt.legend(handles, labels, loc="upper right")
-        plt.savefig(fname=f"iris_{''.join(combo)}.png")
+        # plt.xlabel(combo[0])
+        # plt.ylabel(combo[1])
+
+        # plt.legend(handles, labels, loc="upper right")
+        plt.savefig(fname=f"imgs/iris_{'-'.join(combo)}.png")
 
 
 if __name__ == "__main__":

@@ -1,52 +1,32 @@
 from itertools import combinations
 from typing import List, Tuple
 
-import matplotlib.colors as mcolors
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
+from matplotlib.pyplot import savefig
 from pandas import DataFrame
+from progress.bar import Bar
 
 from ml_examples.loaders.loadIris import load
 from ml_examples.utils.utils import plotMultiLabeledData
 
 
 def main() -> None:
-    validColors: List[str] = list(mcolors.BASE_COLORS.values())
-
     df: DataFrame = load()
     columns: List[str] = df.columns[0:4].tolist()
-    uniqueClasses: List[str] = df["Class"].unique().tolist()
 
     columnCombinations: combinations = combinations(columns, r=2)
 
-    colors: dict[str, int] = {
-        key: value
-        for key, value in zip(uniqueClasses, validColors[0 : len(uniqueClasses)])
-    }
+    with Bar(
+        "Generating scatter plots of the Iris dataset...", max(len(columnCombinations))
+    ) as bar:
+        combo: Tuple[str, str]
+        for combo in columnCombinations:
+            plotMultiLabeledData(
+                title="/".join(combo), df=df, xColumn=combo[0], yColumn=combo[1]
+            )
 
-    combo: Tuple[str, str]
-    for combo in columnCombinations:
-        plotMultiLabeledData(
-            title="/".join(combo), df=df, xColumn=combo[0], yColumn=combo[1]
-        )
+            savefig(fname=f"imgs/iris_{'-'.join(combo)}.png")
 
-        # plt.title()
-        # plt.scatter(
-        #     df[combo[0]], df[combo[1]], c=df["Class"].apply(lambda x: colors[x])
-        # )
-
-        # handles: List[Line2D] = [
-        #     plt.plot([], [], color=color, marker="o", ls="", markersize=10)[0]
-        #     for color in colors.values()
-        # ]
-
-        # labels: List[str] = list(colors.keys())
-
-        # plt.xlabel(combo[0])
-        # plt.ylabel(combo[1])
-
-        # plt.legend(handles, labels, loc="upper right")
-        plt.savefig(fname=f"imgs/iris_{'-'.join(combo)}.png")
+            bar.next()
 
 
 if __name__ == "__main__":

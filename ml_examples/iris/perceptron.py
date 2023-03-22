@@ -122,7 +122,7 @@ def main() -> None:
             title="/".join(bestFeatures),
             xColumnName=bestFeatures[0],
             yColumnName=bestFeatures[1],
-            filename=f"imgs/iris_{'-'.join(labels)}.png",
+            filename=f"imgs/perceptron_training_{'-'.join(labels)}.png",
         )
 
 
